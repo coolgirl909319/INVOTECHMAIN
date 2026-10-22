@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MathPlay - InfoTech</title>
+<style>
+:root{--bg:#2a1f4d;--card:#3b2d6b;--card2:#4a3a82;--mint:#7ef0c8;--sun:#ffd23f;--coral:#ff7a8a;--sky:#7cc6ff;--ink:#fdf8ff}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:"Nunito","Trebuchet MS",system-ui,sans-serif;color:var(--ink);background:radial-gradient(circle at 20% 0,#4b3a8f 0,var(--bg) 55%) fixed}
+header{text-align:center;padding:18px 10px 6px}
+h1{margin:0;font-size:2.4rem;letter-spacing:1px}
+h1 span{color:var(--sun)}
+.sub{opacity:.8;margin:2px 0 12px}
+nav{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:0 10px}
+nav button{border:0;border-radius:999px;padding:10px 18px;font:inherit;font-weight:700;background:var(--card);color:var(--ink);cursor:pointer}
+nav button.on{background:var(--sun);color:#2a1f4d}
+main{max-width:760px;margin:16px auto;padding:0 12px 40px}
+section{display:none;background:var(--card);border-radius:28px;padding:22px;box-shadow:0 8px 0 #20173f}
+section.on{display:block}
+h2{margin:0 0 4px}
+.hint{opacity:.8;margin:0 0 14px}
+.btn{border:0;border-radius:18px;padding:12px 20px;font:inherit;font-weight:800;font-size:1rem;cursor:pointer;background:var(--mint);color:#1b1238;box-shadow:0 4px 0 #3fb894}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #3fb894}
+.btn.alt{background:var(--sun);box-shadow:0 4px 0 #c79c12}
+.btn.sm{padding:8px 14px}
+.mic{width:96px;height:96px;border-radius:50%;font-size:2.4rem;border:0;cursor:pointer;background:var(--coral);box-shadow:0 6px 0 #c24a5b;color:#fff}
+.mic.live{animation:pulse 1s infinite;background:#ff4d63}
+@keyframes pulse{50%{transform:scale(1.1)}}
+.screen{background:#1f1640;border-radius:20px;padding:16px;text-align:right;min-height:110px;margin-bottom:14px}
+.screen .e{opacity:.7;min-height:1.4em;word-break:break-word}
+.screen .r{font-size:2.6rem;font-weight:800;color:var(--mint);word-break:break-all}
+.row{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;margin:10px 0}
+input[type=text]{flex:1;min-width:150px;border:3px solid var(--card2);border-radius:16px;padding:11px 14px;font:inherit;font-size:1.1rem;background:#1f1640;color:var(--ink)}
+.hist{list-style:none;padding:0;margin:12px 0 0;opacity:.85}
+.hist li{padding:5px 0;border-bottom:1px dashed #5c4c9c}
+.stats{display:flex;justify-content:space-around;font-weight:800;margin-bottom:10px;flex-wrap:wrap;gap:6px}
+.q{font-size:3rem;font-weight:800;text-align:center;margin:12px 0;color:var(--sun)}
+.bar{height:12px;border-radius:9px;background:#1f1640;overflow:hidden}
+.bar i{display:block;height:100%;width:100%;background:var(--mint);transition:width 1s linear}
+.msg{text-align:center;font-size:1.3rem;font-weight:800;min-height:1.8em;margin:8px 0}
+#sky{position:relative;height:400px;overflow:hidden;border-radius:20px;background:linear-gradient(#1b2a6b,#5aa9e6 90%)}
+.b{position:absolute;bottom:0;width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.4rem;color:#1b1238;cursor:pointer;background:radial-gradient(circle at 30% 28%,#fff 0,var(--sky) 40%,#4b8fd6);border:2px solid #ffffffaa;user-select:none}
+.b.bad{background:var(--coral);color:#fff}
+.b.good{background:var(--mint)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.card{aspect-ratio:1;border:0;border-radius:18px;font:inherit;font-weight:800;font-size:1.5rem;cursor:pointer;background:var(--card2);color:var(--ink);box-shadow:0 5px 0 #2c2255;transition:transform .25s}
+.card.up{background:var(--sun);color:#1b1238;transform:rotateY(0)}
+.card.done{background:var(--mint);color:#1b1238;box-shadow:none}
+.levels{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:14px 0}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#000c;padding:10px 18px;border-radius:14px;display:none;max-width:90%}
+@media(max-width:480px){h1{font-size:1.8rem}.q{font-size:2.2rem}.screen .r{font-size:2rem}.b{width:60px;height:60px}}
+@media(prefers-reduced-motion:reduce){.mic.live{animation:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Math<span>Play</span> 🧮</h1>
+  <p class="sub">Talk to maths. Maths talks back.</p>
+  <nav id="nav">
+    <button data-t="calc" class="on">🎤 Voice Calculator</button>
+    <button data-t="quiz">⚡ Say It Fast</button>
+    <button data-t="pop">🫧 Bubble Pop</button>
+    <button data-t="mem">🃏 Match Maker</button>
+  </nav>
+</header>
+<main>
+
+<section id="calc" class="on">
+  <h2>Voice Calculator</h2>
+  <p class="hint">Tap the mic once to switch it on (it stays on, so you only allow it one time), then say a sum, like "twelve times seven plus five", "square root of 144" or "20 percent of 450".</p>
+  <div class="screen"><div class="e" id="ce">Nothing yet</div><div class="r" id="cr">0</div></div>
+  <div class="row"><button class="mic" id="cmic" aria-label="Speak a calculation">🎤</button></div>
+  <div class="row"><input type="text" id="cin" placeholder="Or type: 12 * 7 + 5"><button class="btn" id="cgo">Calculate</button></div>
+  <ul class="hist" id="chist"></ul>
+</section>
+
+<section id="quiz">
+  <h2>Say It Fast</h2>
+  <p class="hint">10 questions. Tap the mic once, hear the question, say the answer out loud. Faster answers earn more points!</p>
+  <div id="qsetup">
+    <div class="levels">
+      <button class="btn" data-l="1">🌱 Easy (+ −)</button>
+      <button class="btn alt" data-l="2">🔥 Medium (×)</button>
+      <button class="btn" style="background:var(--coral);box-shadow:0 4px 0 #c24a5b" data-l="3">🚀 Hard (mixed)</button>
+    </div>
+  </div>
+  <div id="qplay" style="display:none">
+    <div class="stats"><span id="qn">Q 1/10</span><span id="qs">Score 0</span><span id="qk">Streak 0</span></div>
+    <div class="bar"><i id="qbar"></i></div>
+    <div class="q" id="qq">?</div>
+    <div class="msg" id="qm"></div>
+    <div class="row"><button class="mic" id="qmic" aria-label="Say your answer">🎤</button></div>
+    <div class="row"><input type="text" id="qin" placeholder="Or type your answer"><button class="btn" id="qgo">Check</button></div>
+    <div class="row"><button class="btn sm alt" id="qrep">🔊 Repeat question</button></div>
+  </div>
+</section>
+
+<section id="pop">
+  <h2>Bubble Pop</h2>
+  <p class="hint">Pop the bubble with the right answer before it floats away. Tap it, or press the mic and say the number.</p>
+  <div class="stats"><span id="pl">Lives ❤️❤️❤️</span><span id="ps">Score 0</span></div>
+  <div class="q" id="pq" style="margin:4px 0">Ready?</div>
+  <div id="sky"></div>
+  <div class="msg" id="pm"></div>
+  <div class="row"><button class="btn" id="pgo">▶ Start</button><button class="mic" id="pmic" style="width:64px;height:64px;font-size:1.6rem" aria-label="Say a number">🎤</button></div>
+</section>
+
+<section id="mem">
+  <h2>Match Maker</h2>
+  <p class="hint">Flip two cards. Match each sum with its answer. Every match is read out loud!</p>
+  <div class="stats"><span id="mm">Moves 0</span><span id="mp">Pairs 0/6</span><button class="btn sm" id="mnew">New game</button></div>
+  <div class="grid" id="mg"></div>
+  <div class="msg" id="mmsg"></div>
+</section>
+
+</main>
+<div id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const r=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick=(...x)=>x[r(0,x.length-1)];
+const shuf=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
+
+function toast(t){const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>e.style.display='none',2600)}
+let spk=0,mute=false;
+function speak(t){try{speechSynthesis.cancel();mute=true;const id=++spk,u=new SpeechSynthesisUtterance(t);u.onend=u.onerror=()=>setTimeout(()=>{if(id===spk)mute=false},600);speechSynthesis.speak(u)}catch(e){mute=false}}
+
+let rec=null,micOn=false,curTab='calc';const handlers={};
+function setLive(on){document.querySelectorAll('.mic').forEach(b=>b.classList.toggle('live',on))}
+function stopListen(){micOn=false;setLive(false);try{rec&&rec.abort()}catch(e){}rec=null}
+function startListen(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){toast('Voice needs Google Chrome or Microsoft Edge. You can still type!');return}
+  micOn=true;setLive(true);
+  rec=new SR();rec.lang='en-US';rec.continuous=true;rec.interimResults=false;
+  rec.onresult=e=>{const res=e.results[e.results.length-1];if(!res.isFinal||mute)return;const h=handlers[curTab];if(h)h(res[0].transcript)};
+  rec.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed'){stopListen();toast('Please allow the microphone, then tap the mic again.')}};
+  rec.onend=()=>{if(micOn)setTimeout(()=>{if(micOn)startListen()},300)};
+  try{rec.start()}catch(err){}
+}
+function toggleMic(){micOn?stopListen():startListen()}
+
+/* ---------- words to numbers + expression parser ---------- */
+const U={zero:0,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19};
+const T={twenty:20,thirty:30,forty:40,fifty:50,sixty:60,seventy:70,eighty:80,ninety:90};
+function w2n(s){
+  const out=[];let cur=0,tot=0,run=false;
+  for(const w of s.split(/\s+/)){
+    if(w in U||w in T){cur+=(U[w]??T[w]);run=true}
+    else if(w==='hundred'&&run){cur=(cur||1)*100}
+    else if(w==='thousand'&&run){tot+=(cur||1)*1000;cur=0}
+    else if(w==='and'&&run){}
+    else{if(run){out.push(tot+cur);tot=0;cur=0;run=false}out.push(w)}
+  }
+  if(run)out.push(tot+cur);
+  return out.join(' ');
+}
+function parse(t){
+  t=t.toLowerCase().replace(/,/g,'').replace(/[?!=]/g,' ').replace(/-/g,' - ');
+  t=t.replace(/what is|what's|calculate|equals|equal to|the answer/g,' ');
+  t=w2n(t);
+  t=t.replace(/(\d+(?:\.\d+)?)\s*(?:percent|%)\s*of\s*(\d+(?:\.\d+)?)/g,'($1/100*$2)');
+  t=t.replace(/square root of\s*(\d+(?:\.\d+)?)/g,'Math.sqrt($1)');
+  t=t.replace(/(\d)\s*point\s*(\d)/g,'$1.$2');
+  t=t.replace(/to the power of|power of|raised to/g,'**').replace(/squared/g,'**2').replace(/cubed/g,'**3');
+  t=t.replace(/multiplied by|multiply by|times|into|×|\bx\b/g,'*');
+  t=t.replace(/divided by|divide by|over|÷/g,'/');
+  t=t.replace(/plus|added to|add/g,'+').replace(/minus|subtract|less/g,'-');
+  t=t.replace(/\s+/g,'');
+  const chk=t.replace(/Math\.sqrt/g,'');
+  if(!t||!/^[\d+\-*\/().]+$/.test(chk))throw new Error('bad');
+  const v=Function('"use strict";return ('+t+')')();
+  if(typeof v!=='number'||!isFinite(v))throw new Error('math');
+  return {expr:t.replace(/\*\*/g,'^').replace(/\*/g,'×').replace(/\//g,'÷').replace(/Math\.sqrt/g,'√'),val:Math.round(v*1e6)/1e6};
+}
+
+/* ---------- 1. Voice Calculator ---------- */
+function calcRun(text){
+  const hist=$('#chist');
+  try{
+    const o=parse(text);
+    $('#ce').textContent=o.expr+' =';$('#cr').textContent=o.val;
+    const li=document.createElement('li');li.textContent=o.expr+' = '+o.val;hist.prepend(li);
+    while(hist.children.length>6)hist.lastChild.remove();
+    speak('The answer is '+o.val);
+  }catch(e){
+    $('#ce').textContent='I heard: "'+text+'"';$('#cr').textContent='?';
+    speak(e.message==='math'?'That one cannot be calculated.':'Sorry, I could not understand that sum. Try again.');
+  }
+}
+$('#cmic').onclick=toggleMic;handlers.calc=calcRun;
+$('#cgo').onclick=()=>{if($('#cin').value.trim())calcRun($('#cin').value)};
+$('#cin').onkeydown=e=>{if(e.key==='Enter')$('#cgo').click()};
+
+/* ---------- question generator (shared) ---------- */
+const SAY={'+':'plus','-':'minus','×':'times','÷':'divided by'};
+function gen(l){
+  let op=l===1?pick('+','-'):l===2?'×':pick('+','-','×','÷'),a,b,ans;
+  const big=l===3;
+  if(op==='+'){a=r(2,big?99:20);b=r(2,big?99:20);ans=a+b}
+  else if(op==='-'){a=r(5,big?99:30);b=r(2,a-1);ans=a-b}
+  else if(op==='×'){a=r(2,big?15:12);b=r(2,big?15:12);ans=a*b}
+  else{b=r(2,12);ans=r(2,12);a=b*ans}
+  return {a,b,op,ans,text:a+' '+op+' '+b,say:a+' '+SAY[op]+' '+b};
+}
+
+/* ---------- 2. Say It Fast ---------- */
+let Q={};
+document.querySelectorAll('#qsetup [data-l]').forEach(b=>b.onclick=()=>{
+  Q={lvl:+b.dataset.l,n:0,score:0,streak:0,lock:false};
+  $('#qsetup').style.display='none';$('#qplay').style.display='block';qNext();
+});
+function qNext(){
+  clearInterval(Q.tm);
+  if(Q.n>=10)return qEnd();
+  Q.n++;Q.cur=gen(Q.lvl);Q.left=15;Q.lock=false;
+  $('#qn').textContent='Q '+Q.n+'/10';$('#qs').textContent='Score '+Q.score;$('#qk').textContent='Streak '+Q.streak;
+  $('#qq').textContent=Q.cur.text+' = ?';$('#qm').textContent='';$('#qin').value='';
+  const bar=$('#qbar');bar.style.transition='none';bar.style.width='100%';void bar.offsetWidth;bar.style.transition='width 1s linear';
+  speak(Q.cur.say);
+  Q.tm=setInterval(()=>{Q.left--;bar.style.width=(Q.left/15*100)+'%';if(Q.left<=0)qCheck(null)},1000);
+}
+function qCheck(v){
+  if(Q.lock)return;Q.lock=true;clearInterval(Q.tm);
+  const m=$('#qm');
+  if(v!==null&&v===Q.cur.ans){
+    const pts=10+Math.max(0,Q.left);Q.score+=pts;Q.streak++;
+    m.style.color='var(--mint)';m.textContent='✅ Correct! +'+pts;speak('Correct!');
+  }else{
+    Q.streak=0;m.style.color='var(--coral)';
+    m.textContent=(v===null?'⏰ Time up! ':'❌ Not quite. ')+'Answer: '+Q.cur.ans;
+    speak('The answer was '+Q.cur.ans);
+  }
+  $('#qs').textContent='Score '+Q.score;$('#qk').textContent='Streak '+Q.streak;
+  setTimeout(qNext,1800);
+}
+function qEnd(){
+  const s=Q.score,st=s>=170?'⭐⭐⭐':s>=100?'⭐⭐':'⭐';
+  $('#qq').textContent=st;$('#qm').style.color='var(--sun)';
+  $('#qm').innerHTML='Final score: '+s+'<br><button class="btn alt" id="qagain" style="margin-top:10px">Play again</button>';
+  speak('Game over. Your score is '+s);
+  $('#qagain').onclick=()=>{$('#qplay').style.display='none';$('#qsetup').style.display='block'};
+}
+function numFrom(text){
+  const m=w2n(text.toLowerCase().replace(/negative|minus/,'-').replace(/-/g,' - ')).replace(/-\s+/,'-').match(/-?\d+(\.\d+)?/);
+  return m?parseFloat(m[0]):NaN;
+}
+$('#qmic').onclick=toggleMic;
+handlers.quiz=t=>{if(!Q.cur||Q.lock)return;const n=numFrom(t);if(isNaN(n)){$('#qm').style.color='var(--ink)';$('#qm').textContent='I heard "'+t+'". Try again!';return}qCheck(n)};
+$('#qgo').onclick=()=>{const n=parseFloat($('#qin').value);if(!isNaN(n))qCheck(n)};
+$('#qin').onkeydown=e=>{if(e.key==='Enter')$('#qgo').click()};
+$('#qrep').onclick=()=>speak(Q.cur.say);
+
+/* ---------- 3. Bubble Pop ---------- */
+let P={lives:0,score:0,round:0,done:true,bubs:[]};
+function hearts(){$('#pl').textContent='Lives '+'❤️'.repeat(Math.max(P.lives,0))}
+$('#pgo').onclick=()=>{P={lives:3,score:0,round:0,done:true,bubs:[]};$('#pm').textContent='';$('#ps').textContent='Score 0';hearts();pRound()};
+function pClear(){cancelAnimationFrame(P.raf);$('#sky').innerHTML='';P.bubs=[]}
+function pRound(){
+  pClear();P.round++;P.done=false;
+  const g=gen(P.round<4?1:P.round<8?2:3);P.ans=g.ans;
+  $('#pq').textContent=g.text+' = ?';
+  const opts=new Set([g.ans]);let guard=0;
+  while(opts.size<5&&guard++<50){const w=g.ans+r(-6,6);if(w>=0)opts.add(w)}
+  const lanes=shuf([0,1,2,3,4]),H=$('#sky').clientHeight,W=$('#sky').clientWidth;
+  [...opts].forEach((v,i)=>{
+    const el=document.createElement('div');el.className='b';el.textContent=v;
+    el.style.left=(lanes[i]*(W-70)/4)+'px';
+    const b={el,val:v,y:-i*r(55,110),sp:45+P.round*5+r(0,14)};
+    el.onclick=()=>pHit(b);$('#sky').appendChild(el);P.bubs.push(b);
+  });
+  P.last=performance.now();
+  const tick=now=>{
+    if(P.done)return;
+    const dt=(now-P.last)/1000;P.last=now;
+    for(const b of P.bubs){
+      b.y+=b.sp*dt;b.el.style.transform='translateY('+(-b.y)+'px)';
+      if(b.val===P.ans&&b.y>H+10){return pLose('Missed it! The answer was '+P.ans)}
+    }
+    P.raf=requestAnimationFrame(tick);
+  };
+  P.raf=requestAnimationFrame(tick);
+}
+function pLose(msg){
+  P.done=true;cancelAnimationFrame(P.raf);P.lives--;hearts();$('#pm').textContent=msg;$('#pm').style.color='var(--coral)';
+  if(P.lives<=0){$('#pm').textContent='Game over! Score '+P.score+'. Press Start to retry.';speak('Game over. Your score is '+P.score);return}
+  setTimeout(pRound,1200);
+}
+function pHit(b){
+  if(P.done)return;
+  if(b.val===P.ans){
+    P.done=true;cancelAnimationFrame(P.raf);P.score++;$('#ps').textContent='Score '+P.score;
+    b.el.classList.add('good');b.el.textContent='🎉';$('#pm').style.color='var(--mint)';$('#pm').textContent='Pop! Nice one!';
+    setTimeout(pRound,700);
+  }else{
+    b.el.classList.add('bad');b.el.textContent='✖';b.el.onclick=null;P.lives--;hearts();
+    setTimeout(()=>b.el.remove(),250);P.bubs=P.bubs.filter(x=>x!==b);
+    if(P.lives<=0){P.done=true;cancelAnimationFrame(P.raf);$('#pm').style.color='var(--coral)';$('#pm').textContent='Game over! Score '+P.score+'. Press Start to retry.';speak('Game over. Your score is '+P.score)}
+  }
+}
+$('#pmic').onclick=toggleMic;
+handlers.pop=t=>{if(P.done)return;const n=numFrom(t),b=P.bubs.find(x=>x.val===n);if(b)pHit(b);else toast('I heard "'+t+'". No bubble with that number!')};
+
+/* ---------- 4. Match Maker ---------- */
+let M={};
+function mNew(){
+  const seen=new Set(),pairs=[];
+  while(pairs.length<6){
+    const op=pick('×','×','+'),a=r(2,9),b=r(2,9),ans=op==='×'?a*b:a+b;
+    if(seen.has(ans))continue;seen.add(ans);
+    pairs.push({id:pairs.length,q:a+' '+op+' '+b,ans,say:a+' '+SAY[op]+' '+b+' equals '+ans});
+  }
+  const cards=[];pairs.forEach(p=>{cards.push({id:p.id,t:p.q,p});cards.push({id:p.id,t:String(p.ans),p})});
+  M={cards:shuf(cards),open:[],moves:0,found:0,lock:false};
+  $('#mmsg').textContent='';mDraw();
+}
+function mDraw(){
+  const g=$('#mg');g.innerHTML='';
+  M.cards.forEach((c,i)=>{
+    const b=document.createElement('button');b.className='card'+(c.done?' done':c.up?' up':'');
+    b.textContent=(c.up||c.done)?c.t:'?';b.onclick=()=>mFlip(i);g.appendChild(b);
+  });
+  $('#mm').textContent='Moves '+M.moves;$('#mp').textContent='Pairs '+M.found+'/6';
+}
+function mFlip(i){
+  const c=M.cards[i];if(M.lock||c.up||c.done)return;
+  c.up=true;M.open.push(i);mDraw();
+  if(M.open.length<2)return;
+  M.moves++;const [x,y]=M.open.map(k=>M.cards[k]);
+  if(x.id===y.id){
+    x.done=y.done=true;M.found++;M.open=[];speak(x.p.say);mDraw();
+    if(M.found===6){$('#mmsg').style.color='var(--sun)';$('#mmsg').textContent='🎉 You won in '+M.moves+' moves!';speak('You won in '+M.moves+' moves')}
+  }else{
+    M.lock=true;
+    setTimeout(()=>{M.open.forEach(k=>M.cards[k].up=false);M.open=[];M.lock=false;mDraw()},900);
+  }
+}
+$('#mnew').onclick=mNew;mNew();
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
+  curTab=b.dataset.t;speechSynthesis.cancel();clearInterval(Q.tm);P.done=true;cancelAnimationFrame(P.raf);
+  document.querySelectorAll('#nav button,section').forEach(e=>e.classList.remove('on'));
+  b.classList.add('on');$('#'+b.dataset.t).classList.add('on');
+});
+</script>
+</body>
+</html>
